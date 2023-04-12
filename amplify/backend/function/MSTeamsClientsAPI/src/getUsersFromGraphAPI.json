@@ -1,11 +1,7 @@
 {
-  "httpMethod": "GET",
-  "path": "/teams/init",
-  "queryStringParameters": {
-    "tenantId": "69ecaa9a-f38c-4f7b-9b2f-1108dfe74b8f",
-    "displayName": "Siv"
-  },
-  "body": "{\n  \"clientID\": \"d0aa9be0-44ba-411b-8712-1ddc33f5c00e\", \n  \"from\": \"connect1\",\n  \"to\": {\n    \"displayname\": \"Siva\",\n    \"id\": \"848c9bb7-36b9-46f1-af04-662a0c379c1b\",\n    \"tenantId\": \"4aed8dae-5d5c-4a2f-a6c8-64f94dfa89f6\"\n  }\n}",
+  "httpMethod": "POST",
+  "path": "/teams/getUsersFromGraphAPI",  
+  "body": "{ \"tenantID\": \"69ecaa9a-f38c-4f7b-9b2f-1108dfe74b8f\",  \"displayName\": \"joh\"  }",
   "headers": {
     "Content-Type": "application/json",
     "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyJ9.eyJhdWQiOiIzNWEyZmY3YS0yOGE1LTQ2NmQtOWY4NC0xY2VmYmU4MGMxODciLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vNjllY2FhOWEtZjM4Yy00ZjdiLTliMmYtMTEwOGRmZTc0YjhmL3YyLjAiLCJpYXQiOjE2ODA3ODk2MDMsIm5iZiI6MTY4MDc4OTYwMywiZXhwIjoxNjgwNzkzNTAzLCJhaW8iOiJBVlFBcS84VEFBQUFFa3NZTlY2K3FFbjNobGtyOXY0TWhQbTR2eDVxTHhxUkw0YlNpZXgxTG8zSXJFOVcvY2JydEZmSXNBZjIzRHBSSzJmcWtHMnFBZUdrZVhsaUVmMTM2ckgxTHp2ZDZLRFhzQnQ4eXVPNUEyYz0iLCJuYW1lIjoiS2hpemFyIEFobWVkIiwibm9uY2UiOiIyMjJiM2M3Mi00MWM3LTQ5N2UtYTBkOS0yYzY3YTVmNTM5NTEiLCJvaWQiOiI5MDA3OTMyYy1jZWFjLTRhZjItYjdlNS00NjcxNjc5NDExZWMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJraGl6YXJhc0A1cGZtODcub25taWNyb3NvZnQuY29tIiwicmgiOiIwLkFWSUFtcXJzYVl6emUwLWJMeEVJMy1kTGozcl9valdsS0cxR240UWM3NzZBd1llNkFFay4iLCJzdWIiOiJnZUdFMHpJeXNnNFltNHYtTGNwa3hvY0FQdlRPdW5mbUZOWGc5SE9jMEk4IiwidGlkIjoiNjllY2FhOWEtZjM4Yy00ZjdiLTliMmYtMTEwOGRmZTc0YjhmIiwidXRpIjoiUWgtQW5XU1VIMHVQOU81SXczaE9BQSIsInZlciI6IjIuMCJ9.lZ6Iu_FZtnv7aVBgEKwcABA8K3Nh8sCV_T2TOCS24xgKPwGZmHkwrfTWmjr1znfxZ9gRBQSlMJW1-rM56Fhy-BC3_Qcol28EKJAVHIBwkVZfLYLYol8VNAXn1C82aw2AB-2YyTVUy-xyc7QTL1uE8NgI6Zf7hpwI-Kfj66ePHNqG06mG_A2Ph-CgW8OeRDYLwbig9IG1kCJxg4iSIkIElOA028LyuKCxQbCde2wGISDullOWk1QCYSIOsxlCl51Bq2_lWD9cv-Z5N9vraxqBOS1AB51FzN-RaeJdUaYoI9xL4PUQswh1qnAFgw-8zCASqro3I-hDpUgP098AiXYHCg"

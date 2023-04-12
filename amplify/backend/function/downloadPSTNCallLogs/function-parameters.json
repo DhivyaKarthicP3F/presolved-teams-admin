@@ -4,6 +4,10 @@
     {
       "cloudFormationParameterName": "msGraphSecretKeyName",
       "environmentVariableName": "MSGraphSecretKeyName"
+    },
+    {
+      "cloudFormationParameterName": "msGraphSecretKeyName",
+      "environmentVariableName": "MSGraphSecretKeyName"
     }
   ],
   "permissions": {

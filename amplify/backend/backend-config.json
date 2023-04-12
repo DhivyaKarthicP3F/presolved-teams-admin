@@ -30,7 +30,7 @@
             "Arn"
           ],
           "category": "function",
-          "resourceName": "MSTeamsClientsAPI"
+          "resourceName": "ItemsHandler"
         },
         {
           "attributes": [
@@ -38,7 +38,7 @@
             "Arn"
           ],
           "category": "function",
-          "resourceName": "ItemsHandler"
+          "resourceName": "MSTeamsClientsAPI"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -245,6 +245,14 @@
       ]
     },
     "AMPLIFY_function_downloadPSTNCallLogs_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "downloadPSTNCallLogs"
+        }
+      ]
+    },
+    "AMPLIFY_function_downloadPSTNCallLogs_msGraphSecretKeyName": {
       "usedBy": [
         {
           "category": "function",

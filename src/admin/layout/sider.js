@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { FileOutlined, PieChartOutlined, UserOutlined, DesktopOutlined, TeamOutlined } from '@ant-design/icons';
+import { FileOutlined, PieChartOutlined, UserOutlined, DesktopOutlined, TeamOutlined , AuditOutlined} from '@ant-design/icons';
 import { Layout, Menu, Space, Typography, } from 'antd';
 import teams from '../assets/images/icons/teams.png'
 import dashboard from '../assets/images/icons/dashboard.png'
@@ -33,6 +33,11 @@ const items = [
         icon: <UserOutlined />,
         label: <Link to="/user-management">Users Management</Link>,
     },
+    {
+        key: 'auditList',
+        icon: <AuditOutlined />,
+        label: <Link to="/audit-list">Audit</Link>,
+    },
 
     {
         key: 'code',
@@ -40,7 +45,7 @@ const items = [
         label: 'Widget Code',
 
     },
-
+    
 ];
 
 const AdminSider = (props) => {

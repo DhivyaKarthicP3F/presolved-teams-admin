@@ -241,7 +241,8 @@ export const updateClientUser = async (updateDetails) => {
   const variables = {
     input:{
       id:updateDetails.id,
-      role: updateDetails.role
+      role: updateDetails.role,
+      status: updateDetails.isDisable?0:1
     },
   };
 

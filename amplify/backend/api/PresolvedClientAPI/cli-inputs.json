@@ -1,16 +1,16 @@
 {
   "version": 1,
   "paths": {
-    "/teams": {
-      "name": "/teams",
-      "lambdaFunction": "MSTeamsClientsAPI",
+    "/items": {
+      "name": "/items",
+      "lambdaFunction": "ItemsHandler",
       "permissions": {
         "setting": "open"
       }
     },
-    "/items": {
-      "name": "/items",
-      "lambdaFunction": "ItemsHandler",
+    "/teams": {
+      "name": "/teams",
+      "lambdaFunction": "MSTeamsClientsAPI",
       "permissions": {
         "setting": "open"
       }

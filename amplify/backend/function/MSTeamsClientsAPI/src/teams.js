@@ -7,6 +7,7 @@ class MSTeams {
   }
 
   async getUsers(tenantId, displayName) {
+    console.log({"apiurl**************************":this.apiURL});
     const url = `${this.apiURL}/api/users?tenantId=${tenantId}&displayName=${displayName}`;
     const response = await axios.get(url);
     return response.data;

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Breadcrumb, Button, Col, Form, Row, Typography, Input, Select, Space, Modal, notification, Table } from 'antd';
 import { UserAddOutlined, UserDeleteOutlined, ExclamationCircleFilled } from '@ant-design/icons';
-import { API, Auth } from "aws-amplify";
 import './management.less';
 import { getClientSignupUserList, createSignup } from '../api/index';
-
+import { API, Auth } from "aws-amplify";
+import { createAuditRecord } from "../../api/auditAPI";
+import { useSelector } from 'react-redux';
 const { confirm } = Modal;
 
 const TenantsManagement = () => {
@@ -14,6 +15,7 @@ const TenantsManagement = () => {
     }, [])
 
     const apiName = "AdminQueries";
+    const loggedUser = useSelector(state => state.user.name)
     const [data, setData] = useState([]);
     const [tableData, setTableData] = useState(data);
     const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -24,7 +26,7 @@ const TenantsManagement = () => {
     //-----------------Get User List Functionalities---------------------------------
 
     const getTenantList = async () => {
-        getClientSignupUserList().then((res) => {
+        getClientSignupUserList().then(async (res) => {
             let data = res.listClientSignups.items
             for (let i = 0; i < Object.keys(data).length; i++) {
                 setData(prev => [...prev, {
@@ -44,11 +46,12 @@ const TenantsManagement = () => {
                     phone: data[i].phone
                 }])
             }
-        }).catch((err) => {
+        }).catch((error) => {
             notification.error({
                 message: 'Error',
                 description: 'Error while fetching list'
             })
+            console.log('list',error)
         })
     }
 
@@ -146,7 +149,7 @@ const TenantsManagement = () => {
                     email: email,
                     phone: phone,
                     role: role,
-                }).then((data) => {
+                }).then(async (data) => {
                     notification.success({
                         message: 'Success',
                         description: 'Tenant created successfully'
@@ -154,6 +157,22 @@ const TenantsManagement = () => {
                     setTableData([]);
                     getTenantList();
                     form.resetFields()
+                    //Add an entry to audit table
+                    let changesMade = {
+                        oldValue: name,
+                        newValue: email,
+                        field: "email",
+                    };
+
+                    let auditRecord = {
+                        tenantId: "P3Fusion",
+                        resource: "AdminTenantManagement",
+                        action: "Create",
+                        byUser: loggedUser,
+                        byDateTime: new Date().toISOString(),
+                        changesMade: JSON.stringify(changesMade),
+                    };
+                    await createAuditRecord(auditRecord);
                 }).catch((err) => {
                     throw err;
                 })
@@ -187,7 +206,7 @@ const TenantsManagement = () => {
             },
         };
         API.post(apiName, path, myInit)
-            .then((response) => {
+            .then(async(response) => {
                 console.log("Response from Disable user API is ", response);
                 notification.info({
                     message: "Success",
@@ -195,6 +214,23 @@ const TenantsManagement = () => {
                 });
                 setTableData([]);
                 getTenantList();
+                //Add an entry to audit table
+                let changesMade = {
+                    oldValue: 'Enable',
+                    newValue: 'Disable',
+                    field: 'Status',
+                };
+
+                let auditRecord = {
+                    tenantId: "P3Fusion",
+                    resource: "AdminTenantManagement",
+                    action: "Disable",
+                    byUser: loggedUser,
+                    byDateTime: new Date().toISOString(),
+                    changesMade: JSON.stringify(changesMade),
+                };
+
+                await createAuditRecord(auditRecord);
             }).catch((error) => {
                 console.log(error.response);
             });

@@ -29,9 +29,10 @@ import {
   UserDeleteOutlined,
   ExclamationCircleFilled,
 } from "@ant-design/icons";
-import { API, Auth } from "aws-amplify";
 import "./management.less";
+import { API, Auth } from "aws-amplify";
 import { createAuditRecord } from "../../api/auditAPI";
+import { useSelector } from 'react-redux';
 
 const { confirm } = Modal;
 
@@ -41,6 +42,7 @@ const UsersManagement = () => {
   }, []);
 
   const apiName = "AdminQueries";
+  const loggedUser = useSelector(state => state.user.name)
   const [data, setData] = useState([]);
   const [tableData, setTableData] = useState(data);
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -56,12 +58,6 @@ const UsersManagement = () => {
   });
   const [form] = Form.useForm();
   const [formEdit] = Form.useForm();
-  const strongRegex = new RegExp(
-    "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})"
-  );
-  const mediumRegex = new RegExp(
-    "^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})"
-  );
 
   //-----------------Get User List Functionalities---------------------------------
 
@@ -76,7 +72,7 @@ const UsersManagement = () => {
     };
 
     API.get(apiName, path, myInit)
-      .then((response) => {
+      .then(async (response) => {
         console.log("Response from ListUsers API is ", response.Users);
 
         //Data for grid view
@@ -110,7 +106,7 @@ const UsersManagement = () => {
   };
 
   const getlistGroupsForUser = async (username, email, name, enable) => {
-    
+
     const path = "/listGroupsForUser";
     const myInit = {
       headers: {
@@ -221,8 +217,8 @@ const UsersManagement = () => {
         groupname: role,
         userAttributes: JSON.stringify([
           {
-              Name: "phone_number",
-              Value: phone,
+            Name: "phone_number",
+            Value: phone,
           },
           {
             Name: "name",
@@ -251,10 +247,8 @@ const UsersManagement = () => {
         setTableData([]);
         getUsersList();
         form.resetFields();
-        
-        //Add an entry to audit table
-        let loggedUser = Auth.currentAuthenticatedUser();
 
+        //Add an entry to audit table
         let changesMade = {
           oldValue: name,
           newValue: email,
@@ -264,18 +258,16 @@ const UsersManagement = () => {
         let auditRecord = {
           tenantId: "P3Fusion",
           resource: "AdminUserManagement",
-          action: "CreateUser",
+          action: "Create",
           byUser: loggedUser,
           byDateTime: new Date().toISOString(),
-          changesMade: changesMade,
+          changesMade: JSON.stringify(changesMade),
         };
 
         await createAuditRecord(auditRecord);
-
-       
       })
       .catch((error) => {
-        console.log(error.response);
+        console.log(error);
       });
   }
 
@@ -300,20 +292,38 @@ const UsersManagement = () => {
       },
     };
     API.post(apiName, path, myInit)
-      .then((response) => {
+      .then(async (response) => {
         console.log("Response from Disable user API is ", response);
-          notification.info({
-            message: "Success",
-            description: "User diasabled successfully",
-          });
-          setTableData([]);
-          getUsersList();
+        notification.info({
+          message: "Success",
+          description: "User diasabled successfully",
+        });
+        setTableData([]);
+        getUsersList();
+        //Add an entry to audit table
+        let changesMade = {
+          oldValue: 'Enable',
+          newValue: 'Disable',
+          field: 'Status',
+        };
+
+        let auditRecord = {
+          tenantId: "P3Fusion",
+          resource: "AdminUserManagement",
+          action: "Disable",
+          byUser: loggedUser,
+          byDateTime: new Date().toISOString(),
+          changesMade: JSON.stringify(changesMade),
+        };
+
+        await createAuditRecord(auditRecord);
+
       })
       .catch((error) => {
         console.log(error.response);
       });
   };
- 
+
 
   const showRemoveConfirm = () => {
     if (selectedRow !== null) {
@@ -372,10 +382,28 @@ const UsersManagement = () => {
       },
     };
     API.post(apiName, path, myInit)
-      .then((response) => {
+      .then(async (response) => {
         console.log("Response from RemoveUser API is ", response);
         //adding user to the new group
-        addUserToGroup(username, selectedRow.newRole); 
+        addUserToGroup(username, selectedRow.newRole);
+        //Add an entry to audit table
+        let changesMade = {
+          oldValue: role,
+          newValue: selectedRow.newRole,
+          field: 'role',
+        };
+
+        let auditRecord = {
+          tenantId: "P3Fusion",
+          resource: "AdminUserManagement",
+          action: "Update",
+          byUser: loggedUser,
+          byDateTime: new Date().toISOString(),
+          changesMade: JSON.stringify(changesMade),
+        };
+
+        await createAuditRecord(auditRecord);
+
       })
       .catch((error) => {
         console.log(error.response);
@@ -399,14 +427,15 @@ const UsersManagement = () => {
     API.post(apiName, path, myInit)
       .then((response) => {
         console.log("Response from addUser API is ", response);
-        notification.success({
-          message: "Success",
-          description: "User role updated successfully",
-        });
         setTableData([]);
         getUsersList();
         formEdit.resetFields();
         setFormValues([]);
+
+        notification.success({
+          message: "Success",
+          description: "User role updated successfully",
+        });
       })
       .catch((error) => {
         console.log(error.response);
@@ -463,7 +492,7 @@ const UsersManagement = () => {
       title: "Enable",
       dataIndex: "enable",
       key: "enable",
-      render : (text) => text?"Enabled":"Disabled",
+      render: (text) => text ? "Enabled" : "Disabled",
     },
   ];
 

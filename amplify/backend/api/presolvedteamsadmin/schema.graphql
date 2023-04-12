@@ -79,6 +79,7 @@ type clientIntergrations
         groups: ["p3fAdmin"]
         operations: [read, create, update, delete]
       }
+      { allow: public, operations: [read] }
     ]
   ) {
   id: ID!
@@ -109,10 +110,12 @@ type clientUserWhitelisting
         groups: ["p3fAdmin"]
         operations: [read, create, update, delete]
       }
+       { allow: public, operations: [read] }
     ]
   ) {
   id: ID!
   tenantId: String!
+  groupId: String!
   displayName: String!
   businessPhones: AWSJSON!
   givenName: String!
@@ -178,3 +181,32 @@ type PresolvedAudit
   byDateTime: AWSDateTime!
   changesMade: AWSJSON
 }
+
+type clientUsersGroup
+  @model
+  @auth(
+    rules: [
+      {
+        allow: owner
+        ownerField: "tenantId"
+        operations: [read, create, update, delete]
+        identityClaim: "custom:tenantId"
+      }
+      {
+        allow: groups
+        groups: ["tenantAdmin"]
+        operations: [read, create, update, delete]
+      }
+      {
+        allow: groups
+        groups: ["p3fAdmin"]
+        operations: [read, create, update, delete]
+      }
+       { allow: public, operations: [read] }
+    ]
+  ){
+  id: ID!
+  tenantId: String!
+  name: String!
+  description: String!
+  }

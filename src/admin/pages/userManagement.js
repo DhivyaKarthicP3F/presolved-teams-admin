@@ -4,6 +4,9 @@ import { UserAddOutlined, UserDeleteOutlined, ExclamationCircleFilled } from '@a
 import { API, Auth } from "aws-amplify";
 import './management.less';
 import { getClientUsersList, createClientUser, updateClientUser } from '../api/index';
+import { useSelector } from 'react-redux';
+import { createAuditRecord } from '../../api/auditAPI';
+import { formatTimeStr } from 'antd/es/statistic/utils';
 
 const { confirm } = Modal;
 
@@ -21,6 +24,7 @@ const UserManagement = (props) => {
     }, [])
 
     const apiName = "AdminQueries";
+    const loggedUser = useSelector(state => state.user.name)
     const [data, setData] = useState([]);
     const [tableData, setTableData] = useState(data);
     const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -55,12 +59,14 @@ const UserManagement = (props) => {
                     key: data[i].id,
                     name: data[i].name,
                     email: data[i].email,
+                    status: data[i].status,
                     role: role
                 }])
                 setTableData(prev => [...prev, {
                     key: data[i].id,
                     name: data[i].name,
                     email: data[i].email,
+                    status: data[i].status,
                     role: role
                 }])
             }
@@ -126,10 +132,10 @@ const UserManagement = (props) => {
                         Name: "name",
                         Value: name,
                     },
-                    // {
-                    //     Name: "phone_number",
-                    //     Value: phone,
-                    // },
+                    {
+                        Name: "phone_number",
+                        Value: phone,
+                    },
                     {
                         Name: "custom:tenantId",
                         Value: state.tenantId,
@@ -151,7 +157,7 @@ const UserManagement = (props) => {
                     email: email,
                     role: role,
                     tenantId: state.tenantId
-                }).then((data) => {
+                }).then(async (data) => {
                     notification.success({
                         message: 'Success',
                         description: 'User created successfully'
@@ -159,6 +165,23 @@ const UserManagement = (props) => {
                     setTableData([]);
                     getUsersList();
                     form.resetFields()
+                    //Add an entry to audit table
+                    let changesMade = {
+                        oldValue: name,
+                        newValue: email,
+                        field: "email",
+                    };
+
+                    let auditRecord = {
+                        tenantId: state.tenantId,
+                        resource: "UserManagement",
+                        action: "Create",
+                        byUser: loggedUser,
+                        byDateTime: new Date().toISOString(),
+                        changesMade: JSON.stringify(changesMade),
+                    };
+
+                    await createAuditRecord(auditRecord);
                 }).catch((err) => {
                     throw err;
                 })
@@ -173,19 +196,99 @@ const UserManagement = (props) => {
             setSelectedRow(selectedRows)
         },
     };
+    const disableUser = async (value) => {
+        var username = value.email;
+        const path = "/disableUser";
+        const myInit = {
+            body: {
+                username: username,
+            },
+            headers: {
+                Authorization: `Bearer ${(await Auth.currentSession())
+                    .getAccessToken()
+                    .getJwtToken()}`,
+            },
+        };
+        API.post(apiName, path, myInit)
+            .then((response) => {
+                console.log("Response from Disable user API is ", response);
+                updateStatusClientUser(selectedRow[0]);
+            }).catch((error) => {
+                console.log(error.response);
+            });
+    }
+
+    const updateStatusClientUser = async (selectedRow) => {
+        updateClientUser({
+            isDisable: true,
+            id: selectedRow.key,
+            status: 0
+        }).then(async (res) => {
+            notification.success({
+                message: 'Success',
+                description: 'User Disabled successfully',
+            });
+            setTableData([]);
+            getUsersList();
+            //Add an entry to audit table
+            let changesMade = {
+                oldValue: 'Enable',
+                newValue: 'Disable',
+                field: 'Status',
+            };
+
+            let auditRecord = {
+                tenantId: state.tenantId,
+                resource: "UserManagement",
+                action: "Disable",
+                byUser: loggedUser,
+                byDateTime: new Date().toISOString(),
+                changesMade: JSON.stringify(changesMade),
+            };
+
+            await createAuditRecord(auditRecord);
+
+        }).catch((err) => {
+            console.log(err);
+        })
+    }
 
 
-    const removeUserInCognito = async (selectedRow, isUpdate) => {
+    const showRemoveConfirm = () => {
+        if (selectedRow !== null) {
+            confirm({
+                title: 'Are you sure disable this user?',
+                icon: <ExclamationCircleFilled />,
+                content: 'User will be disabled from these groups.',
+                okText: 'Yes',
+                okType: 'danger',
+                cancelText: 'No',
+                onOk() {
+                    console.log('OK');
+                    disableUser(selectedRow[0]);
+                },
+                onCancel() {
+                    console.log('Cancel');
+                },
+            });
+        }
+        else (
+            notification.error({
+                message: 'Error',
+                description: 'Please select the user to disable'
+            })
+        )
+    };
+    //----------------------Update User Functionalities--------------------------------------------------
 
-        var role = selectedRow.role;
+    const showEditModal = () => {
+        setEditModalVisible(true)
+    }
+
+    const removeUserInCognito = async (selectedRow) => {
+
+        var role = selectedRow.role=== 'Admin'?'tenantAdmin':selectedRow.role==='Supervisor'?'tenantSupervisor':'tenantUser';
         var username = selectedRow.email;
-        if (selectedRow.role === 'Admin')
-            role = 'tenantAdmin';
-        else if (selectedRow.role === 'Supervisor')
-            role = 'tenantSupervisor';
-        else if (selectedRow.role === 'User')
-            role = 'tenantUser';
-
         const path = "/removeUserFromGroup";
         const myInit = {
             body: {
@@ -201,53 +304,14 @@ const UserManagement = (props) => {
         API.post(apiName, path, myInit)
             .then((response) => {
                 console.log("Response from RemoveTenant API is ", response);
-                if (!isUpdate)
-                    notification.info({
-                        message: 'Success',
-                        description: 'User removed successfully',
-                    });
-                if (isUpdate)
-                    updateUserRole(username, selectedRow.newRole)
-                else {
-                    setTableData([]);
-                    getUsersList();
-                }
+                updateUserRole(username, selectedRow.newRole)
+
             }).catch((error) => {
                 console.log(error.response);
             });
 
     }
 
-    const showRemoveConfirm = () => {
-        if (selectedRow !== null) {
-            confirm({
-                title: 'Are you sure remove this user?',
-                icon: <ExclamationCircleFilled />,
-                content: 'User will be removed from these groups.',
-                okText: 'Yes',
-                okType: 'danger',
-                cancelText: 'No',
-                onOk() {
-                    console.log('OK');
-                    removeUserInCognito(selectedRow[0], false);
-                },
-                onCancel() {
-                    console.log('Cancel');
-                },
-            });
-        }
-        else (
-            notification.error({
-                message: 'Error',
-                description: 'Please select the user to remove'
-            })
-        )
-    };
-    //----------------------Update User Functionalities--------------------------------------------------
-
-    const showEditModal = () => {
-        setEditModalVisible(true)
-    }
 
     const updateUserRole = async (username, role) => {
 
@@ -272,40 +336,59 @@ const UserManagement = (props) => {
                 console.log(error);
             });
 
-            // 2. updating user role in clientUser
-            updateClientUser({
-                id: formValues.key,
-                role: role
-            }).then((res) => {
-                notification.success({
-                    message: 'Success',
-                    description: 'User updated successfully',
-                });
-                setTableData([]);
-                getUsersList();
-                formEdit.resetFields();
-                setFormValues([]);
-    
-            }).catch((err) => {
-                console.log(err);
-            })
+        // 2. updating user role in clientUser
+        updateClientUser({
+            isDisable: false,
+            id: formValues.key,
+            role: role
+        }).then(async (res) => {
+            notification.success({
+                message: 'Success',
+                description: 'User updated successfully',
+            });
+            setTableData([]);
+            getUsersList();
+            formEdit.resetFields();
+            setFormValues([]);
+            //Add an entry to audit table
+
+            let changesMade = {
+                oldValue: formValues.role=== 'Admin'?'tenantAdmin':formValues.role==='Supervisor'?'tenantSupervisor':'tenantUser',
+                newValue: role,
+                field: 'role',
+            };
+
+            let auditRecord = {
+                tenantId: state.tenantId,
+                resource: "UserManagement",
+                action: "Update",
+                byUser: loggedUser,
+                byDateTime: new Date().toISOString(),
+                changesMade: JSON.stringify(changesMade),
+            };
+
+            await createAuditRecord(auditRecord);
+
+        }).catch((err) => {
+            console.log(err);
+        })
     }
 
 
-    const UpdateUserRole = async (values) => {
+    const updateUser = async (values) => {
 
         var username = formValues.email
         var role = values.role
         // removing user from the previous group
         let selectedRow = { 'email': username, 'role': formValues.role, 'newRole': role }
-        removeUserInCognito(selectedRow, true);
+        removeUserInCognito(selectedRow);
         // Adding the user in the new group
 
     }
 
     const handleEditSubmit = (values) => {
         setEditModalVisible(false)
-        UpdateUserRole(values);
+        updateUser(values);
     }
 
     const handleEditCancel = () => {
@@ -339,6 +422,12 @@ const UserManagement = (props) => {
             dataIndex: 'role',
             key: 'role',
         },
+        {
+            title: "Status",
+            dataIndex: "status",
+            key: "status",
+            render: (status) => status !== 0 ? "Enabled" : "Disabled",
+        },
     ];
 
     return (
@@ -369,7 +458,7 @@ const UserManagement = (props) => {
                             }}
                         />
                         <Button type='primary' size='large' onClick={showCreateModal}><UserAddOutlined />Add</Button>
-                        <Button type='primary' size='large' onClick={showRemoveConfirm}><UserDeleteOutlined />Remove</Button>
+                        <Button type='primary' size='large' onClick={showRemoveConfirm}><UserDeleteOutlined />Disable</Button>
                     </Space>
                 </Row>
                 <Row >

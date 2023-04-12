@@ -18,7 +18,7 @@ import { getClientIntegration, getUsersWhiteListing } from './api';
 import TeamsIntegration from './pages/teamsIntegration';
 import TeamsUsersWhitelisting from './pages/usersWhitelist';
 import UserManagement from './pages/userManagement';
-
+import AuditList from './pages/auditList';
 
 const AdminIndexPage = (props) => {
     const dispatch = useDispatch()
@@ -78,6 +78,7 @@ const AdminIndexPage = (props) => {
                                 <TeamsIntegration path="/teams-integration" client={client} />
                                 <TeamsUsersWhitelisting path="/teams-users-whitelisting" client={client} />
                                 <UserManagement path="/user-management" client={client}/>
+                                <AuditList path="/audit-list" />
                             </Router>
                         </Content>
                         :

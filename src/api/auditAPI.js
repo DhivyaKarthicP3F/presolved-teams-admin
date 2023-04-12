@@ -21,10 +21,20 @@ export async function createAuditRecord(auditRecord) {
 }
 
 // list audit records with pagination
-export async function listAuditRecords(filter, limit, nextToken) {
+export async function listAuditRecords(filter, limit, nextToken) { 
+  const variables = {
+    filter: {
+      tenantId: {
+        eq: filter
+      }
+    },
+    limit: limit, 
+    nextToken: nextToken
+  };
+ 
   const auditRecords = await API.graphql({
     query: listPresolvedAudits,
-    variables: { filter: filter, limit: limit, nextToken: nextToken },
+    variables: variables,
   });
   return auditRecords;
 }

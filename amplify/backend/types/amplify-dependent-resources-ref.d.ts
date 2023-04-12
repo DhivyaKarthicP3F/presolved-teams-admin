@@ -64,37 +64,16 @@ export type AmplifyDependentResourcesAttributes = {
             "LambdaExecutionRoleArn": "string"
         }
     },
-    "ItemsHandler": {
-      "Arn": "string",
-      "LambdaExecutionRole": "string",
-      "LambdaExecutionRoleArn": "string",
-      "Name": "string",
-      "Region": "string"
-    },
-    "MSTeamsClientsAPI": {
-      "Arn": "string",
-      "LambdaExecutionRole": "string",
-      "LambdaExecutionRoleArn": "string",
-      "Name": "string",
-      "Region": "string"
-    },
-    "downloadPSTNCallLogs": {
-      "Arn": "string",
-      "LambdaExecutionRole": "string",
-      "LambdaExecutionRoleArn": "string",
-      "Name": "string",
-      "Region": "string"
-    }
-  },
-  "hosting": {
-    "S3AndCloudFront": {
-      "CloudFrontDistributionID": "string",
-      "CloudFrontDomainName": "string",
-      "CloudFrontOriginAccessIdentity": "string",
-      "CloudFrontSecureURL": "string",
-      "HostingBucketName": "string",
-      "Region": "string",
-      "S3BucketSecureURL": "string",
-      "WebsiteURL": "string"
+    "hosting": {
+        "S3AndCloudFront": {
+            "Region": "string",
+            "HostingBucketName": "string",
+            "WebsiteURL": "string",
+            "S3BucketSecureURL": "string",
+            "CloudFrontDistributionID": "string",
+            "CloudFrontDomainName": "string",
+            "CloudFrontSecureURL": "string",
+            "CloudFrontOriginAccessIdentity": "string"
+        }
     }
 }

@@ -32,6 +32,7 @@ const awsServerlessExpressMiddleware = require("aws-serverless-express/middlewar
 const MSTeams = require("./teams");
 const msteams = new MSTeams();
 const { TransferToTeams } = require("./TransferToTeams");
+const Routes = require("./routes");
 
 // declare a new express app
 const app = express();
@@ -48,6 +49,7 @@ app.use(function (req, res, next) {
 /**********************
  * Example get method *
  **********************/
+Routes(app);
 
 app.get("/teams", function (req, res) {
   // Add your code here
@@ -189,6 +191,8 @@ app.delete("/teams/*", function (req, res) {
 app.listen(3000, function () {
   console.log("App started");
 });
+
+
 
 // Export the app object. When executing the application local this does nothing. However,
 // to port it to AWS Lambda we will create a wrapper around that will load the app from

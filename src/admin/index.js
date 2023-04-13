@@ -18,12 +18,9 @@ import { getClientIntegration, getUsersWhiteListing } from './api';
 import TeamsIntegration from './pages/teamsIntegration';
 import TeamsUsersWhitelisting from './pages/usersWhitelist';
 import UserManagement from './pages/userManagement';
-<<<<<<< HEAD
 import AuditList from './pages/auditList';
-=======
 import { getGroupsUsers } from './api/groups';
 
->>>>>>> 052c87482ef1186a1a42cadcee82bc22e6b732fd
 
 const AdminIndexPage = (props) => {
     const dispatch = useDispatch()

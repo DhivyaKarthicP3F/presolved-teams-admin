@@ -25,11 +25,7 @@
           "secretsPathAmplifyAppId": "d2sg3m2pawykox",
           "deploymentBucketName": "amplify-presolvedteamsadmin-develop-201120-deployment",
           "s3Key": "amplify-builds/MSTeamsClientsAPI-6a422b7a355945453543-build.zip",
-<<<<<<< HEAD
-          "callManagerUrl": "https://td7y4pmq4a.execute-api.us-east-1.amazonaws.com/staging"
-=======
           "callManagerUrl": "https://cjycxmjgdb.execute-api.us-east-1.amazonaws.com/qa"
->>>>>>> 052c87482ef1186a1a42cadcee82bc22e6b732fd
         },
         "graphQlLambdaAuthorizerd08aa087": {},
         "downloadPSTNCallLogs": {

@@ -115,7 +115,12 @@ type clientUserWhitelisting
   ) {
   id: ID!
   tenantId: String!
+<<<<<<< HEAD
   groupId: String!
+=======
+  groupId: ID! @index(name: "byGroupId")
+  groupUser: clientUsersGroup @belongsTo(fields: ["groupId"])
+>>>>>>> 052c87482ef1186a1a42cadcee82bc22e6b732fd
   displayName: String!
   businessPhones: AWSJSON!
   givenName: String!
@@ -209,4 +214,8 @@ type clientUsersGroup
   tenantId: String!
   name: String!
   description: String!
+<<<<<<< HEAD
+=======
+  users:[clientUserWhitelisting] @hasMany(indexName: "byGroupId", fields: ["id"])
+>>>>>>> 052c87482ef1186a1a42cadcee82bc22e6b732fd
   }

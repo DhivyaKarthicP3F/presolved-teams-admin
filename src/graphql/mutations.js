@@ -136,6 +136,18 @@ export const createClientUserWhitelisting = /* GraphQL */ `
     createClientUserWhitelisting(input: $input, condition: $condition) {
       id
       tenantId
+      groupId
+      groupUser {
+        id
+        tenantId
+        name
+        description
+        users {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
       displayName
       businessPhones
       givenName
@@ -160,6 +172,18 @@ export const updateClientUserWhitelisting = /* GraphQL */ `
     updateClientUserWhitelisting(input: $input, condition: $condition) {
       id
       tenantId
+      groupId
+      groupUser {
+        id
+        tenantId
+        name
+        description
+        users {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
       displayName
       businessPhones
       givenName
@@ -184,6 +208,18 @@ export const deleteClientUserWhitelisting = /* GraphQL */ `
     deleteClientUserWhitelisting(input: $input, condition: $condition) {
       id
       tenantId
+      groupId
+      groupUser {
+        id
+        tenantId
+        name
+        description
+        users {
+          nextToken
+        }
+        createdAt
+        updatedAt
+      }
       displayName
       businessPhones
       givenName
@@ -289,6 +325,114 @@ export const deletePresolvedAudit = /* GraphQL */ `
       byUser
       byDateTime
       changesMade
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const createClientUsersGroup = /* GraphQL */ `
+  mutation CreateClientUsersGroup(
+    $input: CreateClientUsersGroupInput!
+    $condition: ModelClientUsersGroupConditionInput
+  ) {
+    createClientUsersGroup(input: $input, condition: $condition) {
+      id
+      tenantId
+      name
+      description
+      users {
+        items {
+          id
+          tenantId
+          groupId
+          displayName
+          businessPhones
+          givenName
+          jobTitle
+          mail
+          mobilePhone
+          officeLocation
+          preferredLanguage
+          surname
+          userPrincipalName
+          uid
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const updateClientUsersGroup = /* GraphQL */ `
+  mutation UpdateClientUsersGroup(
+    $input: UpdateClientUsersGroupInput!
+    $condition: ModelClientUsersGroupConditionInput
+  ) {
+    updateClientUsersGroup(input: $input, condition: $condition) {
+      id
+      tenantId
+      name
+      description
+      users {
+        items {
+          id
+          tenantId
+          groupId
+          displayName
+          businessPhones
+          givenName
+          jobTitle
+          mail
+          mobilePhone
+          officeLocation
+          preferredLanguage
+          surname
+          userPrincipalName
+          uid
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const deleteClientUsersGroup = /* GraphQL */ `
+  mutation DeleteClientUsersGroup(
+    $input: DeleteClientUsersGroupInput!
+    $condition: ModelClientUsersGroupConditionInput
+  ) {
+    deleteClientUsersGroup(input: $input, condition: $condition) {
+      id
+      tenantId
+      name
+      description
+      users {
+        items {
+          id
+          tenantId
+          groupId
+          displayName
+          businessPhones
+          givenName
+          jobTitle
+          mail
+          mobilePhone
+          officeLocation
+          preferredLanguage
+          surname
+          userPrincipalName
+          uid
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
       createdAt
       updatedAt
     }

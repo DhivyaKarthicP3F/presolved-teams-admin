@@ -17,7 +17,7 @@ const AdminPage = React.lazy(() => import("./admin/index"));
 const ClientSignupPage = React.lazy(() => import("./signup"));
 const root = document.getElementById("root");
 Amplify.configure(oldAwsConfig);
-Amplify.Logger.LOG_LEVEL = "DEBUG";
+Amplify.Logger.LOG_LEVEL = "INFO";
 //Configure Amplify to use ID Token for Cognito instead of Access Token
 Amplify.configure({
   API: {

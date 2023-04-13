@@ -39,13 +39,13 @@ const TeamsIntegration = (props) => {
 
   const consetVerified =
     (props.location.search.includes("admin_consent=True") &&
-      props.location.search.includes(`tenant=${client.config.tenantId}`)) ||
+      props.location.search.includes(`tenant=${client.config.mstenantId}`)) ||
     false;
 
   const [state, setState] = useState({
     isLoaded: false,
     clientId: null,
-    tenantId: client.config.tenantId || undefined,
+    tenantId: client.config.mstenantId || undefined,
     consetVerified: consetVerified,
     consentMS: client.config.consentMS || 0,
   });
@@ -55,8 +55,8 @@ const TeamsIntegration = (props) => {
       id: client.config.id,
       consentMS: 1,
       loginMS: 1,
-      tenantId: client.clientId,
-      mstenantId: client.config.tenantId,
+      tenantId: client.id,
+      mstenantId: client.config.mstenantId,
       attributes: client.config.attributes,
     });
   }
@@ -197,12 +197,13 @@ const LoginWithMSWidget = ({ client, setCurrent }) => {
   const authCallback = (err, data) => {
     if (data.tenantId) {
       let clientIntegration = {
-        clientId: client.clientId,
-        tenantId: data.tenantId,
+        tenantId: client.id,
+        mstenantId: data.tenantId,
         loginMS: 1,
         consentMS: 0,
         attributes: JSON.stringify(data),
       };
+      console.log("clientIntegration", clientIntegration);
       updateLoginWithMS(clientIntegration)
         .then((response) => {
           notification.success({
@@ -295,7 +296,7 @@ const GetConsent = ({ client, state, setCurrent }) => {
       cancelText: "No",
       onOk() {
         window.location.href = `https://login.microsoftonline.com/${
-          client.config.tenantId || tenantId
+          client.config.mstenantId || tenantId
         }/adminConsent?client_id=35a2ff7a-28a5-466d-9f84-1cefbe80c187&redirect_uri=https://localhost:3000/teams-integration/`;
       },
       onCancel() {

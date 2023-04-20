@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Breadcrumb, Button, Col, Form, Row, Typography, Input, Select, Space, Modal, notification, Table } from 'antd';
+import { Breadcrumb, Button, Col, Form, Row, Typography, Input, Select, Space, Modal, notification, Table, Tabs } from 'antd';
+import moment from 'moment-timezone';
 import { UserAddOutlined, UserDeleteOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import './management.less';
-import { getClientSignupUserList, createSignup } from '../api/index';
+import { getClientSignupUserList, createSignup, getClientUsersList } from '../api/index';
 import { API, Auth } from "aws-amplify";
 import { createAuditRecord } from "../../api/auditAPI";
+import { listAuditRecords } from "../../api/auditAPI";
 import { useSelector } from 'react-redux';
 const { confirm } = Modal;
 
@@ -18,9 +20,16 @@ const TenantsManagement = () => {
     const loggedUser = useSelector(state => state.user.name)
     const [data, setData] = useState([]);
     const [tableData, setTableData] = useState(data);
+    const [tenantUserData, setTenantUserData] = useState([]);
+    const [tenantAuditData, setTenantAuditData] = useState([]);
     const [createModalVisible, setCreateModalVisible] = useState(false);
+    const [detailModalVisible, setDetailModalVisible] = useState(false);
     const [selectedRow, setSelectedRow] = useState(null);
     const [searchValue, setSearchValue] = useState('');
+    const [tenantDetails, setTenantDetails] = useState({
+        tenantId: "",
+        company: ""
+    });
     const [form] = Form.useForm();
 
     //-----------------Get User List Functionalities---------------------------------
@@ -51,7 +60,7 @@ const TenantsManagement = () => {
                 message: 'Error',
                 description: 'Error while fetching list'
             })
-            console.log('list',error)
+            console.log('list', error)
         })
     }
 
@@ -206,7 +215,7 @@ const TenantsManagement = () => {
             },
         };
         API.post(apiName, path, myInit)
-            .then(async(response) => {
+            .then(async (response) => {
                 console.log("Response from Disable user API is ", response);
                 notification.info({
                     message: "Success",
@@ -262,13 +271,177 @@ const TenantsManagement = () => {
         )
     };
 
+
+    //--------------Detail modal-------------------
+
+    const getTenantUsersList = (tenantId) => {
+        setTenantUserData([]);
+        getClientUsersList(tenantId).then((res) => {
+            let data = res.listClientUsers.items
+            for (let i = 0; i < Object.keys(data).length; i++) {
+                let role = "";
+                if (data[i].role === 'tenantAdmin')
+                    role = 'Admin';
+                else if (data[i].role === 'tenantSupervisor')
+                    role = 'Supervisor';
+                else if (data[i].role === 'tenantUser')
+                    role = 'User';
+
+                setTenantUserData(prev => [...prev, {
+                    key: data[i].id,
+                    name: data[i].name,
+                    role: role
+                }])
+            }
+        }).catch((err) => {
+            notification.error({
+                message: 'Error',
+                description: 'Error while fetching tenants user list'
+            })
+        })
+    }
+
+    const getTenantAuditList = (tenantId) => {
+        setTenantAuditData([]);
+        listAuditRecords(tenantId, null, null).then(async (res) => {
+            let data = res.data.listPresolvedAudits.items
+            for (let i = 0; i < Object.keys(data).length; i++) {
+                setTenantAuditData(prev => [...prev, {
+                    key: data[i].id,
+                    byUser: data[i].byUser,
+                    byDateTime: moment(data[i].byDateTime).format('L'),
+                    resource: data[i].resource,
+                    action: data[i].action
+                }])
+            }
+            
+        }).catch((error) => {
+            notification.error({
+                message: 'Error',
+                description: 'Error while fetching list'
+            })
+            console.log(error)
+        })
+    }
+
+    const showDetailModal = () => {
+        setDetailModalVisible(true)
+    }
+    const handleDetailCancel = () => {
+        setDetailModalVisible(false);
+    };
+
+    const UserColumns = [
+        {
+            title: 'Name',
+            dataIndex: 'name',
+            key: 'name',
+            sorter: (a, b) => a.name.localeCompare(b.name)
+        },
+        {
+            title: 'Role',
+            dataIndex: 'role',
+            key: 'role',
+        },
+    ];
+
+    const AuditColumns = [
+        {
+            title: 'Date',
+            dataIndex: 'byDateTime',
+            key: 'byDateTime',
+            fixed: 'left',
+        },
+        {
+            title: 'User',
+            dataIndex: 'byUser',
+            key: 'byUser',
+
+        },
+        {
+            title: 'Action',
+            dataIndex: 'action',
+            key: 'action',
+        },
+
+        {
+            title: 'Resource',
+            dataIndex: 'resource',
+            key: 'resource',
+        },
+    ];
+
+    const tabItems = [
+        {
+            label: 'Users',
+            key: 'users',
+            children: (
+                <Table
+                    columns={UserColumns}
+                    dataSource={tenantUserData}
+                    pagination={{ pageSize: 5 }}
+                />
+            )
+        },
+        {
+            label: 'Audit',
+            key: 'audit',
+            children: (
+                <Table
+                    columns={AuditColumns}
+                    dataSource={tenantAuditData}
+                    pagination={{ pageSize: 5 }}
+                />
+            )
+        },
+    ];
+
+    const onTabKeyChange = (key) => {
+
+    }
+
+    const DetailModal = () => {
+        return (
+            <Modal
+                width={'60%'}
+                title={tenantDetails.company}
+                open={detailModalVisible}
+                onCancel={handleDetailCancel}
+                footer={[
+                    <Button key="submit" type="primary" onClick={handleDetailCancel}>
+                        Close
+                    </Button>
+                ]}
+            >
+                <Tabs defaultActiveKey='users' items={tabItems} onChange={onTabKeyChange}>
+                </Tabs>
+            </Modal >
+        )
+    }
+    //---------------------------------------------
+
     const columns = [
         {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
             fixed: 'left',
-            sorter: (a, b) => a.name.localeCompare(b.name)
+            sorter: (a, b) => a.name.localeCompare(b.name),
+            render: (_, record) => (
+                <a
+                    onClick={() => {
+                        getTenantUsersList(record.tenantId);
+                        getTenantAuditList(record.tenantId);
+                        setTenantDetails({
+                            tenantId: record.tenantId,
+                            company: record.company,
+                        });
+                        showDetailModal();
+                    }}
+                >
+                    {record.name}
+                </a>
+            ),
         },
         {
             title: 'Tenant Id',
@@ -292,16 +465,22 @@ const TenantsManagement = () => {
         },
     ];
 
+    const breadcrumbItems = [
+        {
+            title: 'Home',
+        },
+        {
+            title: 'Tenants management',
+        },
+    ]
+
+
     return (
         <div className='content-container'>
             <div className='main-container'>
                 <Row className='breadcrumb-container'>
                     <Col span={24}>
-                        <Breadcrumb>
-                            <Breadcrumb.Item>Home</Breadcrumb.Item>
-                            <Breadcrumb.Item>Super-admin</Breadcrumb.Item>
-                            <Breadcrumb.Item>Tenants</Breadcrumb.Item>
-                        </Breadcrumb>
+                        <Breadcrumb items={breadcrumbItems} />
                     </Col>
                 </Row>
                 <Row className='topic-container' justify="space-between">
@@ -438,7 +617,7 @@ const TenantsManagement = () => {
                         </Form.Item>
                     </Form>
                 </Modal>
-
+                <DetailModal />
             </div>
         </div>
     );

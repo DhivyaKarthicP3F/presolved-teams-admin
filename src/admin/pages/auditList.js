@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Breadcrumb, Button, Col, Dropdown, Row, Typography, Input, Select, Space, Card, notification, Table, message, DatePicker } from 'antd';
-import { FilterOutlined, UserOutlined, CalendarOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Breadcrumb, Col, Row, Typography, Input, Select, Space, Card, notification, Table, DatePicker } from 'antd';
+import { FilterFilled, CloseCircleTwoTone } from '@ant-design/icons';
 import { listAuditRecords } from "../../api/auditAPI";
 import { useSelector } from 'react-redux';
 import moment from 'moment-timezone';
@@ -13,33 +13,29 @@ const AuditList = () => {
         getAuditList();
     }, [])
 
+    const { RangePicker } = DatePicker;
     const tenantId = useSelector(state => state.user.tenantId)
     const [data, setData] = useState([]);
     const [tableData, setTableData] = useState(data);
-    const [key, setKey] = useState('date');
+    const [pickedFromDate, setPickedFromDate] = useState(null);
+    const [pickedToDate, setPickedToDate] = useState(null);
+    const [pickedAction, setPickedAction] = useState(null);
+    const [pickedUser, setPickedUser] = useState(null);
 
     const getAuditList = () => {
         listAuditRecords(tenantId, null, null).then(async (res) => {
-            console.clear()
-            console.log(res)
-
             let data = res.data.listPresolvedAudits.items
             for (let i = 0; i < Object.keys(data).length; i++) {
                 setData(prev => [...prev, {
                     key: data[i].id,
                     byUser: data[i].byUser,
-                    byDateTime: data[i].byDateTime,
-                    resource: data[i].resource,
-                    action: data[i].action
-                }])
-                setTableData(prev => [...prev, {
-                    key: data[i].id,
-                    byUser: data[i].byUser,
-                    byDateTime: data[i].byDateTime,
+                    byDateTime: moment(data[i].byDateTime).format('L'),
                     resource: data[i].resource,
                     action: data[i].action
                 }])
             }
+            let sortedData = dataSorting(data);
+            setTableData(sortedData);
         }).catch((error) => {
             notification.error({
                 message: 'Error',
@@ -49,74 +45,72 @@ const AuditList = () => {
         })
     }
 
-    const onChangeDatePicker = (date, dateString) => {
-        console.log(date, dateString);
-        let pickedDate = moment(dateString).format('L')
-        const filteredData = data.filter(entry =>
-            entry.byDateTime.includes(pickedDate)
-        );
-        setTableData(filteredData);
-    };
+    const dataSorting = (sortingData) => {
+        return sortingData.sort(function compare(a, b) {
+            var dateA = new Date(a.byDateTime);
+            var dateB = new Date(b.byDateTime);
+            return dateB - dateA;
+        })
+    }
 
     const onChangeInput = (e) => {
-        let pickedUser = e.target.value
-        const filteredData = data.filter(entry =>
-            entry.byUser.toLowerCase().includes(pickedUser.toLowerCase())
-        );
-        setTableData(filteredData);
+        setPickedUser(e.target.value)
+        filterFunction(pickedFromDate, pickedToDate, pickedAction, e.target.value)
     }
 
     const onChangeSelect = (value) => {
-        let pickedAction = value
-        const filteredData = data.filter(entry =>
-            entry.action.toLowerCase().includes(pickedAction.toLowerCase())
-        );
-        setTableData(filteredData);
+        setPickedAction(value)
+        filterFunction(pickedFromDate, pickedToDate, value, pickedUser)
     }
 
-    const onClick = ({ key }) => {
-        message.info(`Click on item ${key}`);
-        setKey(key);
-        let filteredData = [];
-        switch (key) {
-            case 'action':
-                let pickedAction = 'create'
-                filteredData = data.filter(entry =>
-                    entry.action.toLowerCase().includes(pickedAction.toLowerCase())
-                );
-                break;
-            case 'date':
-                let pickedDate = moment(Date.now).format('L')
-                filteredData = data.filter(entry =>
-                    entry.byDateTime.includes(pickedDate)
-                );
-                break;
-            //   case user:
-
-            //   break;
-            default:
-                filteredData = data
+    const onRangeChange = (dates, dateStrings) => {
+        if (dates) {
+            setPickedFromDate(moment(dateStrings[0]).format('L'))
+            setPickedToDate(moment(dateStrings[1]).format('L'))
+            filterFunction(moment(dateStrings[0]).format('L'), moment(dateStrings[1]).format('L'), pickedAction, pickedUser)
         }
-        setTableData(filteredData);
     };
 
-    const items = [
+    const filterFunction = (fromDate, toDate, action, user) => {
+        console.log('date: ', fromDate, toDate, 'action : ', action, 'user: ', user)
+        let filteredData = []
+        for (let i = 0; i < Object.keys(data).length; i++) {
+            if (fromDate === null && action === null && user === null)
+                filteredData.push(data[i])
+            if (fromDate !== null && action === null && user === null)
+                if (fromDate <= data[i].byDateTime && data[i].byDateTime <= toDate)
+                    filteredData.push(data[i])
+            if (fromDate !== null && action !== null && user === null)
+                if (fromDate <= data[i].byDateTime && data[i].byDateTime <= toDate && data[i].action === action)
+                    filteredData.push(data[i])
+            if (fromDate !== null && action === null && user !== null)
+                if (fromDate <= data[i].byDateTime && data[i].byDateTime <= toDate && data[i].byUser.includes(user))
+                    filteredData.push(data[i])
+            if (fromDate !== null && action !== null && user !== null)
+                if (fromDate <= data[i].byDateTime && data[i].byDateTime <= toDate && data[i].action === action && data[i].byUser.includes(user))
+                    filteredData.push(data[i])
+            if (fromDate === null && action !== null && user === null)
+                if (data[i].action === action)
+                    filteredData.push(data[i])
+            if (fromDate === null && action !== null && user !== null)
+                if (data[i].byUser.includes(user) && data[i].action === action)
+                    filteredData.push(data[i])
+            if (fromDate === null && action === null && user !== null)
+                if (data[i].byUser.includes(user))
+                    filteredData.push(data[i])
+        }
+        let sortedData = dataSorting(filteredData);
+        setTableData(sortedData);
+    }
+
+    const breadcrumbItems = [
         {
-            key: 'user',
-            label: 'User',
-            icon: <UserOutlined />
+            title: 'Home',
         },
         {
-            key: 'date',
-            label: 'Date',
-            icon: <CalendarOutlined />
+            title: 'Audit',
         },
-        {
-            key: 'action',
-            label: 'Action',
-            icon: <CheckCircleOutlined />
-        },
-    ];
+    ]
 
     const columns = [
         {
@@ -125,12 +119,8 @@ const AuditList = () => {
             key: 'byDateTime',
             fixed: 'left',
             render: (record) => {
-                console.clear();
-                console.log('record', record)
                 return (
-                    <div>
-                        <p>{moment(record.byDateTime).format('L')}</p>
-                    </div>
+                    <p>{moment(record).format("L")}</p>
                 );
             },
         },
@@ -159,81 +149,67 @@ const AuditList = () => {
             <div className='admin-dashboard'>
                 <Row className='breadcrumb-container'>
                     <Col span={24}>
-                        <Breadcrumb>
-                            <Breadcrumb.Item>Home</Breadcrumb.Item>
-                            <Breadcrumb.Item>Audit</Breadcrumb.Item>
-                        </Breadcrumb>
+                        <Breadcrumb items={breadcrumbItems} />
                     </Col>
                 </Row>
+                <Row className='topic-container' justify="space-between">
+                    <Typography.Title level={3}>Audit Log</Typography.Title>
+                </Row>
+
 
                 <Row className='greetings-container' >
                     <Col span={24} style={{ padding: '10px' }}>
 
                         <Card className='greetings-card' bordered={false} >
-
-                            <Card.Meta style={{ marginBottom: '20px' }} title={<Row justify="space-between" >
-                                <Typography.Title level={4}>Audit Log</Typography.Title>
-                                <Dropdown
-                                    menu={{
-                                        items,
-                                        onClick
-                                    }}
-                                >
-                                    <Button onClick={(e) => e.preventDefault()}>
-                                        <Space>
-                                            <FilterOutlined /> Filter by
-                                        </Space>
-                                    </Button>
-                                </Dropdown>
-                            </Row>}
-                            />
-                            {key === 'date' &&
+                            <Card.Meta title={<Row justify="space-between" >
                                 <Space>
-                                    <Typography>Date</Typography>
-                                    <DatePicker onChange={onChangeDatePicker} />
+                                    <FilterFilled />
+                                    <Typography.Title level={5}>Date</Typography.Title>
+                                    <RangePicker format='MM/DD/YYYY' allowClear={false} onChange={onRangeChange} value={pickedFromDate === null ? [null, null] : [moment(pickedFromDate), moment(pickedToDate)]} />
+                                    <CloseCircleTwoTone onClick={() => { setPickedFromDate(null), setPickedToDate(null), filterFunction(null, null, pickedAction, pickedUser) }} />
                                 </Space>
-                            }
-                            {key === 'user' &&
                                 <Space>
-                                    <Typography>User</Typography>
-                                    <Input onChange={onChangeInput} />
+                                    <FilterFilled />
+                                    <Typography.Title level={5}>User</Typography.Title>
+                                    <Input value={pickedUser} onChange={onChangeInput} placeholder='Select user' />
+                                    <CloseCircleTwoTone onClick={() => { setPickedUser(null); filterFunction(pickedFromDate, pickedToDate, pickedAction, null) }} />
                                 </Space>
-                            }
-                            {key === 'action' &&
                                 <Space>
-                                    <Typography>Action</Typography>
+                                    <FilterFilled />
+                                    <Typography.Title level={5}> Action</Typography.Title>
                                     <Select
-                                        defaultValue="create"
+                                        value={pickedAction}
+                                        placeholder='Select'
                                         options={[
                                             {
-                                                value: 'create',
+                                                value: 'Create',
                                                 label: 'Create',
                                             },
                                             {
-                                                value: 'update',
+                                                value: 'Update',
                                                 label: 'Update',
                                             },
                                             {
-                                                value: 'disable',
+                                                value: 'Disable',
                                                 label: 'Disable',
                                             },
                                         ]}
                                         onChange={onChangeSelect} />
+                                    <CloseCircleTwoTone onClick={() => { setPickedAction(null), filterFunction(pickedFromDate, pickedToDate, null, pickedUser) }} />
                                 </Space>
-                            }
+                            </Row>}
+                            />
                         </Card>
 
                     </Col>
                 </Row>
-
-
                 <Row >
                     <Col className='table-container'>
                         <Table
                             bordered
                             columns={columns}
                             dataSource={tableData}
-
+                            pagination={{ pageSize: 10 }}
                         />
                     </Col>
                 </Row>

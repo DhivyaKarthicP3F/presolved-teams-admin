@@ -287,7 +287,7 @@ const UserManagement = (props) => {
 
     const removeUserInCognito = async (selectedRow) => {
 
-        var role = selectedRow.role=== 'Admin'?'tenantAdmin':selectedRow.role==='Supervisor'?'tenantSupervisor':'tenantUser';
+        var role = selectedRow.role === 'Admin' ? 'tenantAdmin' : selectedRow.role === 'Supervisor' ? 'tenantSupervisor' : 'tenantUser';
         var username = selectedRow.email;
         const path = "/removeUserFromGroup";
         const myInit = {
@@ -353,7 +353,7 @@ const UserManagement = (props) => {
             //Add an entry to audit table
 
             let changesMade = {
-                oldValue: formValues.role=== 'Admin'?'tenantAdmin':formValues.role==='Supervisor'?'tenantSupervisor':'tenantUser',
+                oldValue: formValues.role === 'Admin' ? 'tenantAdmin' : formValues.role === 'Supervisor' ? 'tenantSupervisor' : 'tenantUser',
                 newValue: role,
                 field: 'role',
             };
@@ -430,16 +430,22 @@ const UserManagement = (props) => {
         },
     ];
 
+    const breadcrumbItems = [
+        {
+            title: 'Home',
+        },
+        {
+            title: 'Users management',
+        },
+    ]
+
+
     return (
         <div className='content-container'>
             <div className='main-container'>
                 <Row className='breadcrumb-container'>
                     <Col span={24}>
-                        <Breadcrumb>
-                            <Breadcrumb.Item>Home</Breadcrumb.Item>
-                            <Breadcrumb.Item>Admin</Breadcrumb.Item>
-                            <Breadcrumb.Item>Users management</Breadcrumb.Item>
-                        </Breadcrumb>
+                        <Breadcrumb items={breadcrumbItems} />
                     </Col>
                 </Row>
                 <Row className='topic-container' justify="space-between">

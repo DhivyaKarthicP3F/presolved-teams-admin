@@ -237,7 +237,6 @@ export const createClientUser = async (data) => {
 
 export const updateClientUser = async (updateDetails) => {
 
-  
   const variables = {
     input:{
       id:updateDetails.id,
@@ -267,3 +266,33 @@ export const updateClientUser = async (updateDetails) => {
   });
 };
 
+export const getCallLogs = async (tenantId) => {
+
+  const variables = {
+    filter: {
+      tenantId: {
+        eq: 'P3Fusion'
+      }
+    }
+  };
+ 
+  return new Promise((resolve, reject) => {
+    try {
+      API.graphql({
+        query: queries.listClientCallLogs,
+        variables: variables 
+      })
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          throw error;
+        });
+    } catch (error) {
+      console.error({
+        getCallLogs: error,
+      });
+      reject(error);
+    }
+  });
+};

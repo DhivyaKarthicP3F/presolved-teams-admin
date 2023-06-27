@@ -19,6 +19,7 @@ import TeamsIntegration from './pages/teamsIntegration';
 import TeamsUsersWhitelisting from './pages/usersWhitelist';
 import UserManagement from './pages/userManagement';
 import AuditList from './pages/auditList';
+import CallLogs from './pages/callLogs';
 import { getGroupsUsers } from './api/groups';
 
 
@@ -82,6 +83,7 @@ const AdminIndexPage = (props) => {
                                 <TeamsUsersWhitelisting path="/teams-users-whitelisting" client={client} />
                                 <UserManagement path="/user-management" client={client}/>
                                 <AuditList path="/audit-list" />
+                                <CallLogs path="/call-logs" />
                             </Router>
                         </Content>
                         :

@@ -4,13 +4,14 @@ import { FilterFilled, CloseCircleTwoTone, AuditOutlined } from '@ant-design/ico
 import { listAuditRecords } from "../../api/auditAPI";
 import { useSelector } from 'react-redux';
 import moment from 'moment-timezone';
-import './index.less';
+import './management.less';
 
 
 const AuditList = () => {
 
     useEffect(() => {
         getAuditList();
+        console.log('data',data)
     }, [])
 
     const { RangePicker } = DatePicker;
@@ -96,7 +97,7 @@ const AuditList = () => {
                 if (data[i].byUser.toLowerCase().includes(user.toLowerCase()) && data[i].action === action)
                     filteredData.push(data[i])
             if (fromDate === null && action === null && user !== null)
-                if (data[i].byUser.toLowerCase().toLowerCase().includes(user))
+                if (data[i].byUser.toLowerCase().includes(user.toLowerCase()))
                     filteredData.push(data[i])
         }
         let sortedData = dataSorting(filteredData);
@@ -167,42 +168,42 @@ const AuditList = () => {
                     </Col>
                 </Row>
                 <Row  className='topic-container' justify="space-between" >
-                    <Space>
-                        <FilterFilled />
-                        <Typography.Title level={5}>Date</Typography.Title>
-                        <RangePicker format='MM/DD/YYYY' allowClear={false} onChange={onRangeChange} value={pickedFromDate === null ? [null, null] : [moment(pickedFromDate), moment(pickedToDate)]} />
-                        <CloseCircleTwoTone onClick={() => { setPickedFromDate(null), setPickedToDate(null), filterFunction(null, null, pickedAction, pickedUser) }} />
-                    </Space>
-                    <Space>
-                        <FilterFilled />
-                        <Typography.Title level={5}>User</Typography.Title>
-                        <Input value={pickedUser} onChange={onChangeInput} placeholder='Select user' />
-                        <CloseCircleTwoTone onClick={() => { setPickedUser(null); filterFunction(pickedFromDate, pickedToDate, pickedAction, null) }} />
-                    </Space>
-                    <Space>
-                        <FilterFilled />
-                        <Typography.Title level={5}> Action</Typography.Title>
-                        <Select
-                            value={pickedAction}
-                            placeholder='Select'
-                            options={[
-                                {
-                                    value: 'Create',
-                                    label: 'Create',
-                                },
-                                {
-                                    value: 'Update',
-                                    label: 'Update',
-                                },
-                                {
-                                    value: 'Disable',
-                                    label: 'Disable',
-                                },
-                            ]}
-                            onChange={onChangeSelect} />
-                        <CloseCircleTwoTone onClick={() => { setPickedAction(null), filterFunction(pickedFromDate, pickedToDate, null, pickedUser) }} />
-                    </Space>
-                </Row>
+                                <Space>
+                                    <FilterFilled />
+                                    <Typography.Title level={5}>Date</Typography.Title>
+                                    <RangePicker format='MM/DD/YYYY' allowClear={false} onChange={onRangeChange} value={pickedFromDate === null ? [null, null] : [moment(pickedFromDate), moment(pickedToDate)]} />
+                                    <CloseCircleTwoTone onClick={() => { setPickedFromDate(null), setPickedToDate(null), filterFunction(null, null, pickedAction, pickedUser) }} />
+                                </Space>
+                                <Space>
+                                    <FilterFilled />
+                                    <Typography.Title level={5}>User</Typography.Title>
+                                    <Input value={pickedUser} onChange={onChangeInput} placeholder='Select user' />
+                                    <CloseCircleTwoTone onClick={() => { setPickedUser(null); filterFunction(pickedFromDate, pickedToDate, pickedAction, null) }} />
+                                </Space>
+                                <Space>
+                                    <FilterFilled />
+                                    <Typography.Title level={5}> Action</Typography.Title>
+                                    <Select
+                                        value={pickedAction}
+                                        placeholder='Select'
+                                        options={[
+                                            {
+                                                value: 'Create',
+                                                label: 'Create',
+                                            },
+                                            {
+                                                value: 'Update',
+                                                label: 'Update',
+                                            },
+                                            {
+                                                value: 'Disable',
+                                                label: 'Disable',
+                                            },
+                                        ]}
+                                        onChange={onChangeSelect} />
+                                    <CloseCircleTwoTone onClick={() => { setPickedAction(null), filterFunction(pickedFromDate, pickedToDate, null, pickedUser) }} />
+                                </Space>
+                            </Row>
                 <Row >
                     <Col className='table-container'>
                         <Table

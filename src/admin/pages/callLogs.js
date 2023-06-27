@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Breadcrumb, Col, Row, Typography, Input, Select, Space, Card, notification, Table, DatePicker } from 'antd';
-import { FilterFilled, CloseCircleTwoTone, AuditOutlined } from '@ant-design/icons';
-import { listAuditRecords } from "../../api/auditAPI";
+import { FilterFilled, CloseCircleTwoTone, PhoneFilled } from '@ant-design/icons';
+import { getCallLogs } from '../api/index';
 import { useSelector } from 'react-redux';
 import moment from 'moment-timezone';
 import './index.less';
 
 
-const AuditList = () => {
+const CallLogs = () => {
 
     useEffect(() => {
-        getAuditList();
+        getCallLogsList();
     }, [])
 
     const { RangePicker } = DatePicker;
@@ -22,20 +22,23 @@ const AuditList = () => {
     const [pickedAction, setPickedAction] = useState(null);
     const [pickedUser, setPickedUser] = useState(null);
 
-    const getAuditList = () => {
-        listAuditRecords(tenantId, null, null).then(async (res) => {
-            let data = res.data.listPresolvedAudits.items
+    const getCallLogsList = () => {
+        getCallLogs(tenantId).then(async (res) => {
+            let data = res.listClientCallLogs.items
             for (let i = 0; i < Object.keys(data).length; i++) {
                 setData(prev => [...prev, {
                     key: data[i].id,
-                    byUser: data[i].byUser,
-                    byDateTime: moment(data[i].byDateTime).format('L'),
-                    resource: data[i].resource,
-                    action: data[i].action
+                    calleeNumber: data[i].calleeNumber,
+                    callerNumber: data[i].callerNumber,
+                    callDuration: moment(data[i].callDuration).format('L'),
+                    callType: data[i].callType,
+                    callStartTime: data[i].callStartTime
                 }])
             }
             let sortedData = dataSorting(data);
             setTableData(sortedData);
+            console.clear
+            console.log('call log :', data)
         }).catch((error) => {
             notification.error({
                 message: 'Error',
@@ -108,15 +111,16 @@ const AuditList = () => {
             title: 'Home',
         },
         {
-            title: 'Audit',
+            title: 'CallLogs',
         },
     ]
 
     const columns = [
+
         {
             title: 'Date',
-            dataIndex: 'byDateTime',
-            key: 'byDateTime',
+            dataIndex: 'callStartTime',
+            key: 'callStartTime',
             fixed: 'left',
             render: (record) => {
                 return (
@@ -125,22 +129,27 @@ const AuditList = () => {
             },
         },
         {
-            title: 'User',
-            dataIndex: 'byUser',
-            key: 'byUser',
+            title: 'Type',
+            dataIndex: 'callType',
+            key: 'callType',
 
         },
         {
-            title: 'Action',
-            dataIndex: 'action',
-            key: 'action',
+            title: 'Callee Number',
+            dataIndex: 'calleeNumber',
+            key: 'calleeNumber',
         },
 
         {
-            title: 'Resource',
-            dataIndex: 'resource',
-            key: 'resource',
+            title: 'Caller Number',
+            dataIndex: 'callerNumber',
+            key: 'callerNumber',
         },
+        {
+            title: 'Call Duration',
+            dataIndex: 'callDuration',
+            key: 'callDuration',
+        }
     ];
 
     return (
@@ -152,28 +161,27 @@ const AuditList = () => {
                         <Breadcrumb items={breadcrumbItems} />
                     </Col>
                 </Row>
-
                 <Row className='greetings-container' >
                     <Col span={24} style={{ padding: '10px' }}>
 
                         <Card className='greetings-card' bordered={false} >
                             <Card.Meta title={<Space direction='vertical'>
-                                <Typography.Title level={3} style={{ color: '#639' }}><AuditOutlined style={{ marginRight: '15px', color: '#639' }} />Audit Log</Typography.Title>
-                                <Typography >Monitor any changes made to your content with audit logs.</Typography>
+                                <Typography.Title level={3} style={{ color: '#639' }}><PhoneFilled style={{ marginRight: '15px', color: '#639' }} />Call Logs</Typography.Title>
+                                <Typography >Details about the call origin, call destination, the length of the call, and other transmission details.</Typography>
                             </Space>}
                             />
                         </Card>
 
                     </Col>
                 </Row>
-                <Row  className='topic-container' justify="space-between" >
+                <Row className='topic-container' justify="space-between" >
                     <Space>
                         <FilterFilled />
                         <Typography.Title level={5}>Date</Typography.Title>
                         <RangePicker format='MM/DD/YYYY' allowClear={false} onChange={onRangeChange} value={pickedFromDate === null ? [null, null] : [moment(pickedFromDate), moment(pickedToDate)]} />
                         <CloseCircleTwoTone onClick={() => { setPickedFromDate(null), setPickedToDate(null), filterFunction(null, null, pickedAction, pickedUser) }} />
                     </Space>
-                    <Space>
+                    {/* <Space>
                         <FilterFilled />
                         <Typography.Title level={5}>User</Typography.Title>
                         <Input value={pickedUser} onChange={onChangeInput} placeholder='Select user' />
@@ -201,9 +209,8 @@ const AuditList = () => {
                             ]}
                             onChange={onChangeSelect} />
                         <CloseCircleTwoTone onClick={() => { setPickedAction(null), filterFunction(pickedFromDate, pickedToDate, null, pickedUser) }} />
-                    </Space>
-                </Row>
-                <Row >
+                    </Space> */}
+                </Row>                <Row >
                     <Col className='table-container'>
                         <Table
                             bordered
@@ -219,4 +226,4 @@ const AuditList = () => {
     );
 }
 
-export default AuditList;
+export default CallLogs;

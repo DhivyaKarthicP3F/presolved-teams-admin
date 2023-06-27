@@ -12,10 +12,11 @@ import SuperAdminHeader from './layout/header';
 import SuperAdminSider from './layout/sider';
 import './assets/style/index.less';
 import 'antd/dist/reset.css';
+import AuditList from './pages/auditList';
 
 const UsersManagement = React.lazy(() => import('./pages/usersManagement'))
 const TenantsManagement = React.lazy(() => import('./pages/tenantsManagement'))
-
+const TenantDetails = React.lazy(() => import('./pages/tenantDetails'))
 
 const SuperAdminIndexPage = () => {
 
@@ -62,6 +63,8 @@ const SuperAdminIndexPage = () => {
                             <Router>
                                 <UsersManagement path="/" />
                                 <TenantsManagement path="/tenants" />
+                                <TenantDetails path="/tenant-details/:id" />
+                                <AuditList path="/audit-list"/>
                             </Router>
                         </Content>
                         :

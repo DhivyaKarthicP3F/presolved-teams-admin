@@ -28,23 +28,29 @@ import {
   UserAddOutlined,
   UserDeleteOutlined,
   ExclamationCircleFilled,
+  UserOutlined
 } from "@ant-design/icons";
 import "./management.less";
 import { API, Auth } from "aws-amplify";
 import { createAuditRecord } from "../../api/auditAPI";
 import { useSelector } from 'react-redux';
-
+import { useDispatch } from "react-redux";
+import { updateList } from "../../store/reducers/admin";
 const { confirm } = Modal;
 
 const UsersManagement = () => {
+
+  const loggedUser = useSelector(state => state.user.name)
+  const userList = useSelector(state => state.admin.userList)
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    getUsersList();
+    if (userList !== [])
+      getUsersList();
   }, []);
 
   const apiName = "AdminQueries";
-  const loggedUser = useSelector(state => state.user.name)
-  const [data, setData] = useState([]);
-  const [tableData, setTableData] = useState(data);
+  const [tableData, setTableData] = useState([]);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
@@ -58,6 +64,7 @@ const UsersManagement = () => {
   });
   const [form] = Form.useForm();
   const [formEdit] = Form.useForm();
+
 
   //-----------------Get User List Functionalities---------------------------------
 
@@ -87,6 +94,7 @@ const UsersManagement = () => {
       .catch((error) => {
         console.log(error.response);
       });
+
   };
 
   const getEmail = (attributes) => {
@@ -130,16 +138,6 @@ const UsersManagement = () => {
           role = null;
         }
         if (role !== null) {
-          setData((prev) => [
-            ...prev,
-            {
-              key: username,
-              name: name,
-              email: email,
-              role: role,
-              enable: enable,
-            },
-          ]);
           setTableData((prev) => [
             ...prev,
             {
@@ -150,6 +148,13 @@ const UsersManagement = () => {
               enable: enable,
             },
           ]);
+          dispatch(updateList({
+            key: username,
+            name: name,
+            email: email,
+            role: role,
+            enable: enable,
+          }))
         }
       })
       .catch((error) => {
@@ -506,45 +511,61 @@ const UsersManagement = () => {
     },
   ]
 
+  console.clear()
+  console.log(userList, tableData)
+
   return (
-    <div className="content-container">
-      <div className="main-container">
-        <Row className="breadcrumb-container">
+
+    <div className='content-container'>
+      <div className='admin-dashboard'>
+        <Row className='breadcrumb-container'>
           <Col span={24}>
             <Breadcrumb items={breadcrumbItems} />
           </Col>
         </Row>
-        <Row className="topic-container" justify="space-between">
-          <Typography.Title level={3}> Presolved Users </Typography.Title>
-          <Space>
-            <Input
-              placeholder="Search here"
-              value={searchValue}
-              onChange={(e) => {
-                const currValue = e.target.value;
-                setSearchValue(currValue);
-                const filteredData = data.filter(
-                  (entry) =>
-                    entry.email
-                      .toLowerCase()
-                      .includes(currValue.toLowerCase()) ||
-                    entry.role
-                      .toLowerCase()
-                      .includes(currValue.toLowerCase()) ||
-                    entry.name.toLowerCase().includes(currValue.toLowerCase())
-                );
-                setTableData(filteredData);
-              }}
-            />
-            <Button type="primary" size="large" onClick={showCreateModal}>
-              <UserAddOutlined />
-              Add
-            </Button>
-            <Button type="primary" size="large" onClick={showRemoveConfirm}>
-              <UserDeleteOutlined />
-              Disable
-            </Button>
-          </Space>
+
+        <Row className='greetings-container' >
+          <Col span={24} style={{ padding: '10px' }}>
+
+            <Card className='greetings-card' bordered={false} >
+              <Card.Meta title={<Row justify='space-between'>
+                <Space direction='vertical'>
+                  <Typography.Title level={3} style={{ color: '#639' }}><UserOutlined style={{ marginRight: '15px', color: '#639' }} /> Presolved Users </Typography.Title>
+                  <Typography >The effective management of users</Typography>
+                </Space>
+                <Space>
+                  <Input
+                    placeholder="Search here"
+                    value={searchValue}
+                    onChange={(e) => {
+                      const currValue = e.target.value;
+                      setSearchValue(currValue);
+                      const filteredData = userList.filter(
+                        (entry) =>
+                          entry.email
+                            .toLowerCase()
+                            .includes(currValue.toLowerCase()) ||
+                          entry.role
+                            .toLowerCase()
+                            .includes(currValue.toLowerCase()) ||
+                          entry.name.toLowerCase().includes(currValue.toLowerCase())
+                      );
+                      setTableData(filteredData);
+                    }}
+                  />
+                  <Button type="primary" size="large" onClick={showCreateModal}>
+                    <UserAddOutlined />
+                    Add
+                  </Button>
+                  <Button type="primary" size="large" onClick={showRemoveConfirm}>
+                    <UserDeleteOutlined />
+                    Disable
+                  </Button>
+                </Space>
+              </Row>}
+              />
+            </Card>
+          </Col>
         </Row>
         <Row>
           <Col className="table-container">

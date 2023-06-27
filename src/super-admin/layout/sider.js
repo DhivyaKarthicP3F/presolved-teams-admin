@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { UserOutlined, DesktopOutlined } from '@ant-design/icons';
+import { UserOutlined,SettingFilled ,AuditOutlined } from '@ant-design/icons';
 import { Layout, Menu, Space, Typography, } from 'antd';
 import { Link } from '@gatsbyjs/reach-router'
 const items = [ 
@@ -11,10 +11,16 @@ const items = [
     },
     {
         key: 'tenants',
-        icon: <DesktopOutlined />,
+        icon: <SettingFilled />,
         label: <Link to="/admin/tenants">Tenants</Link>
 
     },
+    {
+        key: 'auditList',
+        icon: <AuditOutlined />,
+        label: <Link to="/admin/audit-list">Audit</Link>,
+    },
+
 ];
 
 const AdminSider = () => {

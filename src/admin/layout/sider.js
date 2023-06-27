@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { FileOutlined, PieChartOutlined, UserOutlined, DesktopOutlined, TeamOutlined , AuditOutlined} from '@ant-design/icons';
+import { FileOutlined, PieChartOutlined, UserOutlined, DesktopOutlined, TeamOutlined , AuditOutlined, PhoneOutlined} from '@ant-design/icons';
 import { Layout, Menu, Space, Typography, } from 'antd';
 import teams from '../assets/images/icons/teams.png'
 import dashboard from '../assets/images/icons/dashboard.png'
@@ -38,7 +38,11 @@ const items = [
         icon: <AuditOutlined />,
         label: <Link to="/audit-list">Audit</Link>,
     },
-
+    {
+        key: 'callLogs',
+        icon: <PhoneOutlined />,
+        label: <Link to="/call-logs">Call Logs</Link>,
+    },
     {
         key: 'code',
         icon: <FileOutlined />,

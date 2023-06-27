@@ -26,6 +26,7 @@ export const getClientIntegration = async (clientId) => {
   });
 };
 
+
 export const updateLoginWithMS = async (clientIntegration) => {
   return new Promise((resolve, reject) => {
     try {
@@ -131,8 +132,17 @@ export const createClientUser = async (data) => {
         },
       })
         .then((response) => {
-          console.log({ createClientUser: response.data });
-          resolve(response.data);
+          // create client users if signup is successful
+          console.log({ createSignup: response.data });
+          createClientIntergrations({
+            tenantId: data.tenantId
+          })
+            .then((response) => {
+              resolve(response);
+            })
+            .catch((error) => {
+              throw error;
+            });
         })
         .catch((error) => {
           throw error;
@@ -140,6 +150,70 @@ export const createClientUser = async (data) => {
     } catch (error) {
       console.error({
         createClientUser: error,
+      });
+      reject(error);
+    }
+  });
+};
+
+export const createClientIntergrations = async (data) => {
+  console.log('createClientIntergrations', 'tenantId', data.tenantId)
+  return new Promise((resolve, reject) => {
+    try {
+      API.graphql({
+        query: mutations.createClientIntergrations,
+        variables: {
+          input: {
+            id: undefined,
+            tenantId: data.tenantId,
+            mstenantId: 'null',
+            loginMS: 0,
+            consentMS: 0,
+            attributes: "{}",
+          },
+        },
+      })
+        .then((response) => {
+          console.log({ createClientIntergrations: response.data });
+          resolve(response.data);
+        })
+        .catch((error) => {
+          throw error;
+        });
+    } catch (error) {
+      console.error({
+        createClientIntergrations: error,
+      });
+      reject(error);
+    }
+  });
+};
+
+export const getClientUsersList = async (tenantId) => {
+
+  const variables = {
+    filter: {
+      tenantId: {
+        eq: tenantId
+      }
+    }
+  };
+
+  return new Promise((resolve, reject) => {
+    try {
+      API.graphql({
+        query: queries.listClientUsers,
+        variables: variables
+      })
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          throw error;
+        });
+    } catch (error) {
+      console.error({
+        getClientUsersList: error,
       });
       reject(error);
     }
